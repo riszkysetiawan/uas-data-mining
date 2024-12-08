@@ -7,7 +7,8 @@ import plotly.express as px
 
 # Fungsi untuk membaca dataset
 def load_data(file_path):
-    return pd.read_excel(file_path)
+    return pd.read_excel(file_path, engine='openpyxl')
+
 
 # Fungsi untuk melakukan clustering
 def perform_clustering(data, n_clusters):

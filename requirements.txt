@@ -8,3 +8,4 @@ PyMySQL
 mysql-connector-python
 scikit-learn 
 matplotlib
+openpyxl
