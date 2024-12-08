@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 import plotly.express as px
+import plotly.graph_objects as go
 
 # Fungsi untuk membaca dataset
 def load_data(file_path):
@@ -53,32 +54,32 @@ else:
     st.header("Clustered Data")
     st.dataframe(clustered_data)
 
-    # Visualisasi clustering
-    st.header("Cluster Visualization")
-    fig, ax = plt.subplots()
-    colors = ['green', 'red', 'blue', 'orange', 'purple', 'brown', 'pink', 'gray', 'olive', 'cyan']
-
-    for cluster in range(n_clusters):
-        cluster_data = clustered_data[clustered_data['Cluster'] == cluster]
-        ax.scatter(cluster_data['Kuantitas'], cluster_data['Jumlah Per Baris'],
-                   color=colors[cluster % len(colors)], label=f'Cluster {cluster}')
-
-    # Centroid
-    ax.scatter(kmeans_model.cluster_centers_[:, 0], kmeans_model.cluster_centers_[:, 1],
-               color='black', marker='*', label='Centroids')
-    ax.set_xlabel("Kuantitas")
-    ax.set_ylabel("Jumlah Per Baris")
-    ax.legend()
-    st.pyplot(fig)
-
-    # Visualisasi dengan Plotly
-    fig = px.scatter(clustered_data, x='Kuantitas', y='Jumlah Per Baris', color='Cluster',
-                     title='Cluster Visualization',
-                     labels={'Cluster': 'Cluster'})
+    # Visualisasi clustering dengan Plotly
+    st.header("Cluster Visualization ")
+    fig = px.scatter(
+        clustered_data,
+        x='Kuantitas',
+        y='Jumlah Per Baris',
+        color='Cluster',
+        title='Cluster Visualization',
+        labels={'Cluster': 'Cluster'},
+        hover_data=clustered_data.columns
+    )
+    # Tambahkan centroid ke dalam grafik
+    centroids = pd.DataFrame(kmeans_model.cluster_centers_, columns=columns_to_use)
+    fig.add_trace(
+        go.Scatter(
+            x=centroids['Kuantitas'],
+            y=centroids['Jumlah Per Baris'],
+            mode='markers',
+            marker=dict(color='black', size=12, symbol='x'),
+            name='Centroids'
+        )
+    )
     st.plotly_chart(fig)
 
     # Evaluasi jumlah cluster menggunakan Elbow Method
-    st.header("Elbow Method")
+    st.header("Elbow Method ")
     k_rng = range(1, 11)
     sse = []
 
@@ -87,9 +88,22 @@ else:
         km.fit(filtered_data[columns_to_use])
         sse.append(km.inertia_)
 
-    fig, ax = plt.subplots()
-    ax.plot(k_rng, sse, marker='o')
-    ax.set_xlabel('Number of Clusters (k)')
-    ax.set_ylabel('Sum of Squared Errors (SSE)')
-    ax.set_title('Elbow Method for Optimal k')
-    st.pyplot(fig)
+    # Visualisasi Elbow Method dengan Plotly
+    elbow_fig = go.Figure()
+    elbow_fig.add_trace(
+        go.Scatter(
+            x=list(k_rng),
+            y=sse,
+            mode='lines+markers',
+            marker=dict(size=10),
+            line=dict(color='blue'),
+            name='SSE'
+        )
+    )
+    elbow_fig.update_layout(
+        title='Elbow Method for Optimal k',
+        xaxis_title='Number of Clusters (k)',
+        yaxis_title='Sum of Squared Errors (SSE)',
+        template='plotly_white'
+    )
+    st.plotly_chart(elbow_fig)
