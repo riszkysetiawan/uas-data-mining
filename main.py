@@ -17,7 +17,7 @@ def perform_clustering(data, n_clusters):
     return data, kmeans
 
 # Load dataset
-file_path = "assets/sales.xlsx"  # Pastikan file ini ada di direktori
+file_path = "assets/sales.xlsx" 
 try:
     data = load_data(file_path)
 except Exception as e:
@@ -50,8 +50,8 @@ else:
         clustered_data,
         x='Kuantitas',
         y='Total',
-        color='Cluster',  # Parameter color untuk membedakan warna setiap cluster
-        color_discrete_sequence=px.colors.qualitative.Set1,  # Warna berbeda
+        color='Cluster',
+        color_discrete_sequence=px.colors.qualitative.Set1,  
         title='Visualisasi Semua Cluster',
         labels={'Cluster': 'Cluster'},
         hover_data=clustered_data.columns
