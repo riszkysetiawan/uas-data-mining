@@ -28,7 +28,7 @@ except Exception as e:
 
 # Sidebar untuk pengaturan clustering
 st.sidebar.header("Clustering Configuration")
-n_clusters = st.sidebar.slider('Select number of clusters', min_value=2, max_value=10, value=2)
+n_clusters = st.sidebar.slider('Select number of clusters', min_value=2, max_value=10, value=3)
 
 # Pastikan kolom 'Kuantitas' dan 'Total' ada
 columns_to_use = ['Kuantitas', 'Total']
