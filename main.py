@@ -28,81 +28,50 @@ except Exception as e:
 
 # Sidebar untuk pengaturan clustering
 st.sidebar.header("Clustering Configuration")
+n_clusters = st.sidebar.slider('Select number of clusters', min_value=2, max_value=10, value=2)
+
+# Pastikan kolom 'Kuantitas' dan 'Total' ada
 columns_to_use = ['Kuantitas', 'Total']
 
 if not all(col in data.columns for col in columns_to_use):
     st.error("Kolom 'Kuantitas' dan 'Total' tidak ditemukan dalam dataset.")
     st.stop()
 
-n_clusters = st.sidebar.slider('Select number of clusters', min_value=2, max_value=10, value=3)
-
-# Sidebar untuk filter tambahan
-st.sidebar.header("Filters")
-min_kuantitas = st.sidebar.number_input("Minimum Kuantitas", value=int(data['Kuantitas'].min()))
-max_kuantitas = st.sidebar.number_input("Maximum Kuantitas", value=int(data['Kuantitas'].max()))
-min_jumlah = st.sidebar.number_input("Minimum Total", value=int(data['Total'].min()))
-max_jumlah = st.sidebar.number_input("Maximum Total", value=int(data['Total'].max()))
-
-st.title("Dashboard Clustering")
-
-# Filter data berdasarkan input
-filtered_data = data[(data['Kuantitas'] >= min_kuantitas) &
-                     (data['Kuantitas'] <= max_kuantitas) &
-                     (data['Total'] >= min_jumlah) &
-                     (data['Total'] <= max_jumlah)]
-
-# Pastikan ada data yang lolos filter
-if filtered_data.empty:
-    st.warning("Tidak ada data yang sesuai dengan filter. Silakan ubah nilai filter.")
+# Clustering
+if len(data) < n_clusters:
+    st.error("Jumlah data lebih kecil dari jumlah cluster. Kurangi jumlah cluster atau perbanyak data.")
 else:
-    # Clustering
-    if len(filtered_data) < n_clusters:
-        st.error("Jumlah data lebih kecil dari jumlah cluster. Kurangi jumlah cluster atau perbanyak data.")
-    else:
-        clustered_data, kmeans_model = perform_clustering(filtered_data[columns_to_use], n_clusters)
+    clustered_data, kmeans_model = perform_clustering(data[columns_to_use], n_clusters)
 
-        # Tampilkan data yang telah dikelompokkan
-        st.header("Clustered Data")
-        st.dataframe(clustered_data)
+    # Tampilkan data yang telah dikelompokkan
+    st.header("Clustered Data")
+    st.dataframe(clustered_data)
 
-        # Visualisasi clustering dengan Plotly
-        st.header("Cluster Visualization")
-        fig = px.scatter(
-            clustered_data,
-            x='Kuantitas',
-            y='Total',
-            color='Cluster',
-            title='Cluster Visualization',
-            labels={'Cluster': 'Cluster'},
-            hover_data=clustered_data.columns
-        )
+    # **Cluster 1: Grafik dan Elbow**
+    st.subheader("Cluster 1")
+    fig1 = px.scatter(
+        clustered_data[clustered_data['Cluster'] == 0],
+        x='Kuantitas',
+        y='Total',
+        color='Cluster',
+        title='Cluster 1 Visualization',
+        labels={'Cluster': 'Cluster'},
+        hover_data=clustered_data.columns
+    )
+    st.plotly_chart(fig1)
 
-        # Tambahkan centroid ke dalam grafik
-        centroids = pd.DataFrame(kmeans_model.cluster_centers_, columns=columns_to_use)
-        fig.add_trace(
-            go.Scatter(
-                x=centroids['Kuantitas'],
-                y=centroids['Total'],
-                mode='markers',
-                marker=dict(color='black', size=12, symbol='x'),
-                name='Centroids'
-            )
-        )
-        st.plotly_chart(fig)
-
-        # Evaluasi jumlah cluster menggunakan Elbow Method
-        st.header("Elbow Method")
-        k_rng = range(1, min(11, len(filtered_data) + 1))
-        sse = []
-
+    # Elbow Method untuk Cluster 1
+    st.subheader("Elbow Method - Cluster 1")
+    k_rng = range(1, 11)
+    sse = []
+    try:
         for k in k_rng:
             km = KMeans(n_clusters=k, random_state=42)
-            km.fit(filtered_data[columns_to_use])
+            km.fit(clustered_data[clustered_data['Cluster'] == 0][columns_to_use])
             sse.append(km.inertia_)
 
-        # Visualisasi Elbow Method dengan Plotly
-        elbow_fig = go.Figure()
-        elbow_fig.add_trace(
+        elbow_fig1 = go.Figure()
+        elbow_fig1.add_trace(
             go.Scatter(
                 x=list(k_rng),
                 y=sse,
@@ -112,12 +81,98 @@ else:
                 name='SSE'
             )
         )
-        elbow_fig.update_layout(
-            title='Elbow Method for Optimal k',
+        elbow_fig1.update_layout(
+            title='Elbow Method for Cluster 1',
             xaxis_title='Number of Clusters (k)',
             yaxis_title='Sum of Squared Errors (SSE)',
             template='plotly_white'
         )
-        st.plotly_chart(elbow_fig)
+        st.plotly_chart(elbow_fig1)
+    except ValueError as e:
+        st.error(f"Error saat menjalankan Elbow Method untuk Cluster 1: {e}. Coba kurangi jumlah cluster.")
 
-# Jalankan kode ini di terminal menggunakan: streamlit run <nama_file>.py
+    # **Cluster 2: Grafik dan Elbow**
+    st.subheader("Cluster 2")
+    fig2 = px.scatter(
+        clustered_data[clustered_data['Cluster'] == 1],
+        x='Kuantitas',
+        y='Total',
+        color='Cluster',
+        title='Cluster 2 Visualization',
+        labels={'Cluster': 'Cluster'},
+        hover_data=clustered_data.columns
+    )
+    st.plotly_chart(fig2)
+
+    # Elbow Method untuk Cluster 2
+    st.subheader("Elbow Method - Cluster 2")
+    sse = []
+    try:
+        for k in k_rng:
+            km = KMeans(n_clusters=k, random_state=42)
+            km.fit(clustered_data[clustered_data['Cluster'] == 1][columns_to_use])
+            sse.append(km.inertia_)
+
+        elbow_fig2 = go.Figure()
+        elbow_fig2.add_trace(
+            go.Scatter(
+                x=list(k_rng),
+                y=sse,
+                mode='lines+markers',
+                marker=dict(size=10),
+                line=dict(color='green'),
+                name='SSE'
+            )
+        )
+        elbow_fig2.update_layout(
+            title='Elbow Method for Cluster 2',
+            xaxis_title='Number of Clusters (k)',
+            yaxis_title='Sum of Squared Errors (SSE)',
+            template='plotly_white'
+        )
+        st.plotly_chart(elbow_fig2)
+    except ValueError as e:
+        st.error(f"Error saat menjalankan Elbow Method untuk Cluster 2: {e}. Coba kurangi jumlah cluster.")
+
+    # **Cluster 3: Grafik dan Elbow**
+    st.subheader("Cluster 3")
+    fig3 = px.scatter(
+        clustered_data[clustered_data['Cluster'] == 2],
+        x='Kuantitas',
+        y='Total',
+        color='Cluster',
+        title='Cluster 3 Visualization',
+        labels={'Cluster': 'Cluster'},
+        hover_data=clustered_data.columns
+    )
+    st.plotly_chart(fig3)
+
+    # Elbow Method untuk Cluster 3
+    st.subheader("Elbow Method - Cluster 3")
+    sse = []
+    try:
+        for k in k_rng:
+            km = KMeans(n_clusters=k, random_state=42)
+            km.fit(clustered_data[clustered_data['Cluster'] == 2][columns_to_use])
+            sse.append(km.inertia_)
+
+        elbow_fig3 = go.Figure()
+        elbow_fig3.add_trace(
+            go.Scatter(
+                x=list(k_rng),
+                y=sse,
+                mode='lines+markers',
+                marker=dict(size=10),
+                line=dict(color='red'),
+                name='SSE'
+            )
+        )
+        elbow_fig3.update_layout(
+            title='Elbow Method for Cluster 3',
+            xaxis_title='Number of Clusters (k)',
+            yaxis_title='Sum of Squared Errors (SSE)',
+            template='plotly_white'
+        )
+        st.plotly_chart(elbow_fig3)
+    except ValueError as e:
+        st.error(f"Error saat menjalankan Elbow Method untuk Cluster 3: {e}. Coba kurangi jumlah cluster.")
