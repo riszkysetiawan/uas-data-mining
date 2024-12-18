@@ -1,0 +1,15 @@
+DESKRIPSI ATRIBUT DATA SALES ROBRIES
+
+Tanggal          = Tanggal transaksi
+Nomor Transaksi  = Kode transaksi
+Nama Panggilan   = Nama panggilan customer
+Nama Produk      = Nama produk yang dibeli
+Kode Produk      = Kode produk yang dibeli
+Deskripsi        = Deskripsi produk berupa ukuran atau  warna
+Kuantitas        = Jumlah produk yang dibeli dalam 1 kali transaksi
+Harga per Unit   = Harga 1 unit produk
+Total            = Total harga produk yang dibeli dalam 1 kali transaksi
+Tag              = Penanda berisi informasi produk yang dibeli
+Cost Produksi    = Biaya produksi
+Profit           = Keuntungan
+

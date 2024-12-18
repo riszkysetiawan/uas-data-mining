@@ -9,11 +9,8 @@ from sklearn.metrics import silhouette_score
 # Membaca data
 @st.cache_data
 def load_data():
-    # Gantilah dengan path data Anda jika menggunakan file lokal
     data = pd.read_excel('assets/sales_clean.xlsx')
-    return data.copy()  # Pastikan data tidak dimutasi setelah dimuat
-
-# Menampilkan dataset dan statistik
+    return data.copy()  
 data = load_data()
 
 # Header Dashboard
@@ -38,14 +35,11 @@ def perform_clustering(columns, n_clusters):
     X = data[columns]
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-
-    # Melakukan fitting model KMeans
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
     data['Cluster'] = kmeans.fit_predict(X_scaled)
 
-    # Visualisasi Scatter Plot Interaktif dengan Plotly
+    # Visualisasi Scatter Plot Intera   ktif dengan Plotly
     if len(columns) == 2:
-        # Visualisasi 2D
         fig = px.scatter(
             data, 
             x=columns[0], 
