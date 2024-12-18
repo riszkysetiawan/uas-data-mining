@@ -67,7 +67,7 @@ def perform_clustering(columns, n_clusters):
 
     # Menampilkan Silhouette Score untuk evaluasi
     silhouette_avg = silhouette_score(X_scaled, data['Cluster'])
-    st.subheader(f"Silhouette Score untuk {columns[0]} dan {columns[1]}: {silhouette_avg:.2f}")
+    # st.subheader(f"Silhouette Score untuk {columns[0]} dan {columns[1]}: {silhouette_avg:.2f}")
 
 # Memilih kolom berdasarkan pilihan clustering
 if clustering_option == 'Kuantitas, Profit, Cost Produksi':
